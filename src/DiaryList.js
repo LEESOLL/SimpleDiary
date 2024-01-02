@@ -1,6 +1,6 @@
 import DiaryItem from "./DiaryItem";
 
-const DiaryList = ({ diaryList, onDelete }) => {
+const DiaryList = ({ diaryList, onRemove, onEdit }) => {
   return (
     <div className="DiaryList">
       <h2>일기 리스트</h2>
@@ -8,7 +8,12 @@ const DiaryList = ({ diaryList, onDelete }) => {
       <div>
         {diaryList.map((item) => (
           <>
-            <DiaryItem key={item.id} {...item} onDelete={onDelete} />
+            <DiaryItem
+              key={item.id}
+              {...item}
+              onRemove={onRemove}
+              onEdit={onEdit}
+            />
           </>
         ))}
       </div>

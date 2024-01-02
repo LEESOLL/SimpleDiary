@@ -21,14 +21,21 @@ function App() {
     setData([newItem, ...data]); // 추가된 일기가 상단에 보여야 하므로, newItem 을 먼저 써주고 ...data 추가해줌
   };
 
-  const onDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+  const onRemove = (targetId) => {
+    setData(data.filter((item) => item.id !== targetId));
   };
 
+  const onEdit = (targetId, newContent) => {
+    setData(
+      data.map((item) =>
+        item.id === targetId ? { ...item, content: newContent } : item
+      )
+    );
+  };
   return (
     <div className="App">
       <DiaryEditor onCreate={onCreate} />
-      <DiaryList diaryList={data} onDelete={onDelete} />
+      <DiaryList diaryList={data} onRemove={onRemove} onEdit={onEdit} />
     </div>
   );
 }
