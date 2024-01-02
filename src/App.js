@@ -18,13 +18,17 @@ function App() {
       id: dataId.current, //useRef(0) 의 객체이므로 current 는 0이 들어있음.
     };
     dataId.current += 1;
-    setData([newItem, ...data]);
+    setData([newItem, ...data]); // 추가된 일기가 상단에 보여야 하므로, newItem 을 먼저 써주고 ...data 추가해줌
+  };
+
+  const onDelete = (id) => {
+    setData(data.filter((item) => item.id !== id));
   };
 
   return (
     <div className="App">
       <DiaryEditor onCreate={onCreate} />
-      <DiaryList diaryList={data} />
+      <DiaryList diaryList={data} onDelete={onDelete} />
     </div>
   );
 }
