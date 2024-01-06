@@ -1,8 +1,13 @@
-import { useRef, useEffect, useMemo, useCallback, useReducer } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useReducer,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
-// import OptimizeTest from "./OptimizeTest";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -32,9 +37,17 @@ const reducer = (state, action) => {
   }
 };
 
-function App() {
-  // const [data, setData] = useState([]);
+export const DiaryStateContext = React.createContext();
+export const DiaryDispatchContext = React.createContext();
+// data 만 관리하는 context를 만들고
+// dispatch 와 같은 데이터를 변경하는 함수를 관리하는 context를 따로 만든다 -> context 중첩!
+// Provider 컴포넌트로 value에 함수도 데이터와 같이 전달하는 방법을 생각할 수 있는데
+// 그렇게 하면 절대 안된다.
+// Provider 도 결국엔 컴포넌트이기 때문에, data 가 변경된다면 전달된 함수들도 다시 재생성하게 되어 비효율적이게 되고
+// 우리가 이미 다 해놓은 최적화 useCallback 등이 다 풀려버린다.
+// 그렇기 때문에 context를 중첩해서 만드는 것이다.
 
+function App() {
   const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
@@ -78,6 +91,9 @@ function App() {
     dispatch({ type: "EDIT", targetId, newContent });
   }, []);
 
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
+  }, []); // useMemo 를 쓰는 이유는 앱 컴포넌트가 재생성이 될 때 함수들은 재생성되지 않아도 되기 때문에 그렇게 하려고
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((item) => item.emotion >= 3).length;
     const badCount = data.length - goodCount;
@@ -90,15 +106,18 @@ function App() {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
-    <div className="App">
-      {/* <OptimizeTest /> */}
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기 : {data.length}</div>
-      <div>기분 좋은 일기 개수 : {goodCount}</div>
-      <div>기분 나쁜 일기 개수 : {badCount}</div>
-      <div>기분 좋은 일기 비율 : {goodRatio}</div>
-      <DiaryList diaryList={data} onRemove={onRemove} onEdit={onEdit} />
-    </div>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor />
+          <div>전체 일기 : {data.length}</div>
+          <div>기분 좋은 일기 개수 : {goodCount}</div>
+          <div>기분 나쁜 일기 개수 : {badCount}</div>
+          <div>기분 좋은 일기 비율 : {goodRatio}</div>
+          <DiaryList />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 
